@@ -7,6 +7,7 @@ import com.lambdaschool.usermodel.models.User;
 import com.lambdaschool.usermodel.models.UserRoles;
 import com.lambdaschool.usermodel.models.Useremail;
 import com.lambdaschool.usermodel.services.UserService;
+import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -20,12 +21,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import static org.mockito.ArgumentMatchers.any;
 import java.util.ArrayList;
@@ -50,7 +53,7 @@ public class UserControllerTestNoDB {
     @MockBean
     private UserService userService;
 
-    private final List<User> userList = new ArrayList<>();
+    private List<User> userList = new ArrayList<>();
 
     @Before
     public void setUp() throws Exception
@@ -137,7 +140,10 @@ public class UserControllerTestNoDB {
                         r2));
         userList.add(u4);
 
-        MockitoAnnotations.initMocks(this);
+        RestAssuredMockMvc.webAppContextSetup(webApplicationContext);
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+                .apply(SecurityMockMvcConfigurers.springSecurity())
+                .build();
     }
 
     @After
@@ -184,7 +190,7 @@ public class UserControllerTestNoDB {
 
     @Test
     public void getUserByName() throws Exception{
-        String apiUrl = "/user/name/admin";
+        String apiUrl = "/users/user/name/admin";
 
         Mockito.when(userService.findByName("admin")).thenReturn(userList.get(0));
 
@@ -208,7 +214,7 @@ public class UserControllerTestNoDB {
 
     @Test
     public void getUserLikeName() throws Exception{
-        String apiUrl = "/user/user/name/like/admin";
+        String apiUrl = "/users/user/name/like/admin";
 
         Mockito.when(userService.findByNameContaining("admin"))
                 .thenReturn(userList);
@@ -245,7 +251,7 @@ public class UserControllerTestNoDB {
 
     @Test
     public void deleteUserById() throws Exception{
-        String apiUrl = "/user/user/{id}";
+        String apiUrl = "/users/user/{id}";
 
         RequestBuilder rb = MockMvcRequestBuilders.delete(apiUrl,
                 "10")

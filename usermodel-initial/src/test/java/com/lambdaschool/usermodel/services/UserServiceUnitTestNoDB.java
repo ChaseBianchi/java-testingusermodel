@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -161,7 +162,7 @@ public class UserServiceUnitTestNoDB {
         assertEquals("admin", userService.findUserById(1L).getUsername());
     }
 
-    @Test
+    @Test(expected = ResourceNotFoundException.class)
     public void findUserByIdNotFound(){
         Mockito.when(userRepository.findById(9999L))
                 .thenThrow(ResourceNotFoundException.class);
@@ -211,5 +212,11 @@ public class UserServiceUnitTestNoDB {
 
     @Test
     public void deleteAll() {
+        Mockito.when(userRepository.findAll())
+                .thenReturn(userList);
+        Mockito.doNothing().when(userRepository).deleteAll();
+
+        userService.deleteAll();
+        assertEquals(4, userList.size());
     }
 }
